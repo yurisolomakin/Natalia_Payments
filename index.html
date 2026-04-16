@@ -1,5 +1,120 @@
 <!DOCTYPE html>
 <html lang="ru">
+<script type="text/javascript" src="https://jstest.authorize.net/v1/Accept.js" charset="utf-8"></script>
+
+<script>
+let currentAmount = 0;
+let currentDescription = "";
+
+function initiatePayment(amount, description) {
+    currentAmount = amount;
+    currentDescription = description;
+    
+    // Here you would typically show your Popup/Modal to collect Card Info
+    // For this example, we assume the user has filled the fields in a modal
+    // and then calls the original send function:
+    //sendPaymentDataToAnet();
+    
+    // 2. Update Modal UI
+    document.getElementById('modalAmount').innerText = amount;
+    document.getElementById('modalTitle').innerText = "Оплата: " + amount + "$";
+    document.getElementById('modalDescription').innerText = description;
+
+    // 3. Show Modal
+    document.getElementById('paymentModal').style.display = "block";
+}
+	
+	
+	function closeModal() {
+    document.getElementById('paymentModal').style.display = "none";
+}
+
+window.onclick = function(event) {
+    let modal = document.getElementById('paymentModal');
+    if (event.target == modal) { closeModal(); }
+}
+
+async function processPaymentOnBackend(opaqueData) {
+    // Show loader, hide button
+    document.getElementById('paySubmitButton').style.display = 'none';
+    document.getElementById('loadingIndicator').style.display = 'block';
+
+    const payload = {
+        dataDescriptor: opaqueData.dataDescriptor,
+        dataValue: opaqueData.dataValue,
+        amount: currentAmount,
+        description: currentDescription,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value
+    };
+
+    try {
+        const response = await fetch('https://your-api-endpoint.com/api/pay', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert("Успешно! Ваша оплата принята.");
+            closeModal();
+            // Optional: window.location.href = "success.html";
+        } else {
+            const errorData = await response.json();
+            alert("Ошибка: " + (errorData.message || "Платеж отклонен."));
+            resetModal();
+        }
+    } catch (err) {
+        alert("Ошибка сети. Проверьте соединение.");
+        resetModal();
+    }
+}
+
+function resetModal() {
+    document.getElementById('paySubmitButton').style.display = 'block';
+    document.getElementById('loadingIndicator').style.display = 'none';
+}
+
+
+function sendPaymentDataToAnet() {
+    var authData = {
+        clientKey: "4663hn9qcxCLYxYpKQXF6dtu9NUG7V4F893336EZyYjCz2rceQ9vgghsu6jZEePd",
+        apiLoginID: "695CdbtN22d"
+    };
+
+    var cardData = {
+        cardNumber: document.getElementById("cardNumber").value,
+        month: document.getElementById("expMonth").value,
+        year: document.getElementById("expYear").value,
+        cardCode: document.getElementById("cvv").value
+    };
+
+    var secureData = {
+        authData: authData,
+        cardData: cardData
+    };
+
+    Accept.dispatchData(secureData, responseHandler);
+}
+
+function responseHandler(response) {
+    if (response.messages.resultCode === "Error") {
+        alert("Error: " + response.messages.message[0].text);
+    } else {
+        // Prepare the object for your Spring Boot API
+        const payload = {
+            dataDescriptor: response.opaqueData.dataDescriptor,
+            dataValue: response.opaqueData.dataValue,
+            amount: currentAmount,
+            description: currentDescription,
+            email: document.getElementById("email").value, // Collect these in your popup
+            phone: document.getElementById("phone").value
+        };
+        
+        processPaymentOnBackend(payload);
+    }
+}
+</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -131,6 +246,61 @@
                 flex: 1 1 100%;
             }
         }
+        .pay-button {
+    background-color: #ffd700; /* Gold to match your highlight color */
+    color: #151b60;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.pay-button:hover {
+    background-color: #ffffff;
+    transform: scale(1.05);
+}
+.close-button {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #aaa;
+}
+.close-button:hover { color: #000; }
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+    color: #333; /* Text inside modal needs to be dark */
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
     </style>
 </head>
 <body>
@@ -229,6 +399,7 @@
                     <p>Стоимость сеанса - $70</p>
                     <p>Рекомендации по поддержанию результата</p>
                     <p><b>Начните свой путь к исцелению сегодня!</b></p>
+                    <button class="pay-button" onclick="initiatePayment(70, 'Energy Session - Natalia Healing')">Оплатить сеанс</button>
                 `;
             } else if (section === 'intensive-course') {
                 contentDiv.innerHTML = `
@@ -241,6 +412,7 @@
                     </ul>
                     <p><b>Не упустите шанс обрести гармонию и здоровье быстрее, чем вы думали! Начните свой путь к исцелению уже сегодня!</b></p>
                     <p>Стоимость: $250</p>
+                    <button class="pay-button" onclick="initiatePayment(250, '4-Day Intensive Course')">Оплатить интенсив</button>
                 `;
             } else if (section === 'author-course') {
                 contentDiv.innerHTML = `
@@ -255,8 +427,9 @@
 
 <p>Первая консультация бесплатна.</p>
 <p>Стоимость: $700</p>
-
 <b>Начните путь к новой жизни уже сегодня!</b>
+<button class="pay-button" onclick="initiatePayment(700, 'author-course')">Оплатить курс</button>
+
                 `;
             } else if (section === 'psychological-sessions') {
                 contentDiv.innerHTML = `
@@ -273,6 +446,7 @@
 <p><b>Начните своё преображение сегодня!</b></p>
 <p>Длительность - 60 минут</p>
 <p>Стоимость: $85</p>
+<button class="pay-button" onclick="initiatePayment(85, 'psychological-sessions')">Оплатить сессию</button>
                 `;
             } else if (section === 'facial-rejuvenation') {
                 contentDiv.innerHTML = `
@@ -292,6 +466,7 @@
 <p><b>Начните путь к омоложению уже сегодня и обретите свою лучшую версию!</b></p>
 <p>Длительность: 75 минут</p>
 <p>Стоимость: $150</p>
+<button class="pay-button" onclick="initiatePayment(150, 'facial-rejuvenation')">Оплатить сессию</button>
                 `;
             } else if (section === 'body-energy-practices') {
                 contentDiv.innerHTML = `
@@ -311,10 +486,35 @@
                     <p>Длительность - 70 минут</p>
                     <p>Стоимость сеанса - $150</p>
                     <p><b>Попробуй и ощути разницу!</b></p>
+<button class="pay-button" onclick="initiatePayment(150, 'body-energy-practices')">Оплатить сессию</button>
                 `;
             }
         }
     </script>
+
+<div id="paymentModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle">Complete Payment</h2>
+        <p id="modalDescription" style="color: #666; font-size: 0.9rem;"></p>
+        <hr>
+        
+        <input type="text" id="cardNumber" placeholder="Card Number (16 digits)" maxlength="16">
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="expMonth" placeholder="MM" maxlength="2">
+            <input type="text" id="expYear" placeholder="YY" maxlength="2">
+            <input type="text" id="cvv" placeholder="CVV" maxlength="4">
+        </div>
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="tel" id="phone" placeholder="Phone Number">
+        
+        <button id="paySubmitButton" class="pay-button" style="width: 100%;" onclick="sendPaymentDataToAnet()">
+            Pay $<span id="modalAmount">0</span>
+        </button>
+        <div id="loadingIndicator" style="display:none; margin-top:10px;">Processing payment... Please wait.</div>
+    </div>
+</div>
+
 
 </body>
 </html>
