@@ -7,26 +7,34 @@
         let currentDescription = "";
 
         function initiatePayment(amount, description) {
+            // 1. CLEAR PREVIOUS DATA
+            document.getElementById("cardNumber").value = "";
+            document.getElementById("expMonth").value = "";
+            document.getElementById("expYear").value = "";
+            document.getElementById("cvv").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("phone").value = "";
+
+            // 2. RESET THE UI STATE (Hide loader, show button)
+            document.getElementById('paySubmitButton').style.display = 'block';
+            document.getElementById('loadingIndicator').style.display = 'none';
+
+            // 3. Set the new data
             currentAmount = amount;
             currentDescription = description;
 
-            // Here you would typically show your Popup/Modal to collect Card Info
-            // For this example, we assume the user has filled the fields in a modal
-            // and then calls the original send function:
-            //sendPaymentDataToAnet();
-
-            // 2. Update Modal UI
             document.getElementById('modalAmount').innerText = amount;
             document.getElementById('modalTitle').innerText = "Оплата: " + amount + "$";
             document.getElementById('modalDescription').innerText = description;
 
-            // 3. Show Modal
+            // 4. Show Modal
             document.getElementById('paymentModal').style.display = "block";
         }
 
 
         function closeModal() {
             document.getElementById('paymentModal').style.display = "none";
+            resetModal(); // Ensure it's ready for the next click
         }
 
         window.onclick = function (event) {
