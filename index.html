@@ -8,6 +8,8 @@
 
         function initiatePayment(amount, description) {
             // 1. CLEAR PREVIOUS DATA
+            document.getElementById("firstName").value = "";
+            document.getElementById("lastName").value = "";
             document.getElementById("cardNumber").value = "";
             document.getElementById("expMonth").value = "";
             document.getElementById("expYear").value = "";
@@ -54,6 +56,9 @@
                 dataValue: opaqueData.dataValue,
                 amount: currentAmount,
                 description: currentDescription,
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+
                 email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value
             };
@@ -512,6 +517,11 @@
                 <h2 id="modalTitle">Complete Payment</h2>
                 <p id="modalDescription" style="color: #666; font-size: 0.9rem;"></p>
                 <hr>
+
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="firstName" placeholder="First Name">
+                    <input type="text" id="lastName" placeholder="Last Name">
+                </div>
 
                 <input type="text" id="cardNumber" placeholder="Card Number (16 digits)" maxlength="16">
                 <div style="display: flex; gap: 10px;">
