@@ -26,7 +26,7 @@
             currentDescription = description;
 
             document.getElementById('modalAmount').innerText = amount;
-            document.getElementById('modalTitle').innerText = "Оплата: " + amount + "$";
+            document.getElementById('modalTitle').innerText = "Оплата: $" + amount;
             document.getElementById('modalDescription').innerText = description;
 
             // 4. Show Modal
@@ -129,6 +129,43 @@
                 processPaymentOnBackend(payload);
             }
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            function handleRouting() {
+                // Получаем хэш без символа #
+                var hash = window.location.hash.substring(1);
+
+                // Список ваших ID секций (проверьте, чтобы они совпадали с id в HTML)
+                var validPages = ['home', 'energy', 'intensive', 'course', 'psy', 'face', 'body', 'about', 'contact'];
+
+                if (hash && validPages.includes(hash)) {
+                    showContent(hash);
+                } else {
+                    // Если хэша нет или он неверный, показываем главную
+                    showContent('home');
+                }
+            }
+
+            // Слушаем загрузку страницы
+            handleRouting();
+
+            // Слушаем изменение хэша (если вы нажали "назад" в браузере или ввели новый хэш)
+            window.addEventListener('hashchange', handleRouting);
+        });
+
+        window.addEventListener('load', () => {
+            const currentHash = window.location.hash;
+
+            if (currentHash) {
+                // .substring(1) removes the "#" so you get "energy" instead of "#energy"
+                const targetId = currentHash.substring(1);
+
+                // Call your existing function
+                showContent(targetId);
+            }
+        });
+
     </script>
     <head>
         <meta charset="UTF-8">
@@ -354,7 +391,7 @@
             </div>
         </div>
         <footer>
-            <p class="custom-color-white">Наталья Шарова &copy; 2024</p>
+            <p class="custom-color-white">Наталья Шарова &copy; 2026</p>
         </footer>
 
         <script>
@@ -507,6 +544,9 @@
                         <p><b>Попробуй и ощути разницу!</b></p>
     <button class="pay-button" onclick="initiatePayment(150, 'Телесно-энергетическая терапия')">Оплатить сессию</button>
                     `;
+                }
+                if (window.location.hash !== '#' + id) {
+                    window.history.pushState(null, null, '#' + id);
                 }
             }
         </script>
