@@ -1,521 +1,527 @@
 <!DOCTYPE html>
 <html lang="ru">
-<script type="text/javascript" src="https://jstest.authorize.net/v1/Accept.js" charset="utf-8"></script>
-
-<script>
-let currentAmount = 0;
-let currentDescription = "";
-
-function initiatePayment(amount, description) {
-    currentAmount = amount;
-    currentDescription = description;
-    
-    // Here you would typically show your Popup/Modal to collect Card Info
-    // For this example, we assume the user has filled the fields in a modal
-    // and then calls the original send function:
-    //sendPaymentDataToAnet();
-    
-    // 2. Update Modal UI
-    document.getElementById('modalAmount').innerText = amount;
-    document.getElementById('modalTitle').innerText = "Оплата: " + amount + "$";
-    document.getElementById('modalDescription').innerText = description;
-
-    // 3. Show Modal
-    document.getElementById('paymentModal').style.display = "block";
-}
-	
-	
-	function closeModal() {
-    document.getElementById('paymentModal').style.display = "none";
-}
-
-window.onclick = function(event) {
-    let modal = document.getElementById('paymentModal');
-    if (event.target == modal) { closeModal(); }
-}
-
-async function processPaymentOnBackend(opaqueData) {
-    // Show loader, hide button
-    document.getElementById('paySubmitButton').style.display = 'none';
-    document.getElementById('loadingIndicator').style.display = 'block';
-
-    const payload = {
-        dataDescriptor: opaqueData.dataDescriptor,
-        dataValue: opaqueData.dataValue,
-        amount: currentAmount,
-        description: currentDescription,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value
-    };
-
-    try {
-        const response = await fetch('https://solomakin.com/api/v1/payments/process', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-            alert("Успешно! Ваша оплата принята.");
-            closeModal();
-            // Optional: window.location.href = "success.html";
-        } else {
-            const errorData = await response.json();
-            alert("Ошибка: " + (errorData.message || "Платеж отклонен."));
-            resetModal();
-        }
-    } catch (err) {
-        alert("Ошибка сети. Проверьте соединение.");
-        resetModal();
-    }
-}
-
-function resetModal() {
-    document.getElementById('paySubmitButton').style.display = 'block';
-    document.getElementById('loadingIndicator').style.display = 'none';
-}
-
-
-function sendPaymentDataToAnet() {
-    var authData = {
-        clientKey: "4663hn9qcxCLYxYpKQXF6dtu9NUG7V4F893336EZyYjCz2rceQ9vgghsu6jZEePd",
-        apiLoginID: "695CdbtN22d"
-    };
-
-    var cardData = {
-        cardNumber: document.getElementById("cardNumber").value,
-        month: document.getElementById("expMonth").value,
-        year: document.getElementById("expYear").value,
-        cardCode: document.getElementById("cvv").value
-    };
-
-    var secureData = {
-        authData: authData,
-        cardData: cardData
-    };
-
-    Accept.dispatchData(secureData, responseHandler);
-}
-
-function responseHandler(response) {
-    if (response.messages.resultCode === "Error") {
-        alert("Error: " + response.messages.message[0].text);
-    } else {
-        // Prepare the object for your Spring Boot API
-        const payload = {
-            dataDescriptor: response.opaqueData.dataDescriptor,
-            dataValue: response.opaqueData.dataValue,
-            amount: currentAmount,
-            description: currentDescription,
-            email: document.getElementById("email").value, // Collect these in your popup
-            phone: document.getElementById("phone").value
-        };
-        
-        processPaymentOnBackend(payload);
-    }
-}
-</script>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Исцеление души и тела</title>
-    <style>
-        .justified-text {
-            text-align: justify;
-        }
-    </style>
-    <style>
-        body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #4a4a4a;
-        }
-        .container {
-            width: 80%;
-            margin: auto;
-            overflow: hidden;
-        }
-        header {
-            background-image: url('draw-image--dark-night-sky-in-blue-tones--rare-stars-cropped-70.jpg');
-            background-size: cover;
-            padding-top: 30px;
-            min-height: 130px;
-            border-bottom: #151b60 3px solid;
-        }
-        header a {
-            color: #ffffff;
-            text-decoration: none;
-            text-transform: uppercase;
-            font-size: 16px;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-        header a:hover {
-            color: #e0e0e0;
-        }
-        header ul {
-            padding: 0;
-            list-style: none;
-            display: flex;
-            justify-content: flex-end;
-        }
-        header li {
-            margin: 0 20px;
-        }
-        header .highlight, header .current a {
-            color: #ffd700;
-        }
-        header .branding {
-            float: left;
-        }
-        header .branding img {
-            width: 120px; /* Увеличено с 60px до 120px */
-            height: 120px; /* Увеличено с 60px до 120px */
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        .content {
-            padding: 30px;
-            background: #fff;
-            min-height: 400px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-        .blocks {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .block {
-            background-image: url('draw-image--dark-night-sky-in-blue-tones--rare-stars-cropped-70.jpg');
-            background-size: cover;
-            padding: 25px;
-            flex: 1 1 calc(33% - 40px);
-            box-sizing: border-box;
-            min-width: 250px;
-            text-align: center;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            color: #FFFFFF;
-        }
-        .block:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            background: #283593;
-        }
-        footer {
-            background-image: url('draw-image--dark-night-sky-in-blue-tones--rare-stars-cropped-70.jpg');
-            background-size: cover;
-            padding: 20px;
-            margin-top: 20px;
-            text-align: center;
-            border-radius: 8px;
-        }
-        
-        .custom-color-white {
-            color: #FFFFFF;
-		}
-        .custom-color-blue {
-            color: #171c9c;
-		}
-        
-        @media (max-width: 600px) {
-            header ul {
-                flex-direction: column;
-                align-items: center;
-            }
-            header li {
-                margin: 10px 0;
-            }
-            .container {
-                width: 95%;
-                padding: 0 10px;
-            }
-            .content {
-                padding: 15px;
-            }
-            .blocks {
-                flex-direction: column;
-            }
-            .block {
-                flex: 1 1 100%;
-            }
-        }
-        .pay-button {
-    background-color: #ffd700; /* Gold to match your highlight color */
-    color: #151b60;
-    border: none;
-    padding: 15px 30px;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 50px;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: transform 0.2s, background-color 0.2s;
-}
-
-.pay-button:hover {
-    background-color: #ffffff;
-    transform: scale(1.05);
-}
-.close-button {
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #aaa;
-}
-.close-button:hover { color: #000; }
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-}
-
-.modal-content {
-    background-color: #fff;
-    margin: 5% auto;
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-    color: #333; /* Text inside modal needs to be dark */
-}
-
-.modal-content input {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    box-sizing: border-box;
-}
-    </style>
-</head>
-<body>
-    <header>
-        <div class="container">
-            <div class="branding">
-                <img src="site_04.jpeg" alt="Logo" width="120" height="120">
-            </div>
-            <nav>
-                <ul>
-                    <li><a onclick="showContent('home')">Главная</a></li>
-                    <li><a onclick="showContent('about')">Обо мне</a></li>
-                    <li><a onclick="showContent('contact')">Контакты</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <div class="container">
-        <div class="content" id="content">
-            <h1 class="custom-color-blue">Исцеление души и тела</h1>
-            <p>Меня зовут Наталья Шарова, и я здесь, чтобы помочь вам найти путь к исцелению, когда другие методы не принесли облегчения. Моя миссия – исцелять души и тела, используя уникальные методики, которые действительно работают.</p>
-            <p>Если вы ищете истинное исцеление и готовы к переменам, я здесь, чтобы провести вас через этот путь. Добро пожаловать на первый шаг к вашему новому здоровью и благополучию!</p>
-            <div class="blocks">
-                <div class="block" onclick="showContent('energy-sessions')">Энергоочищающие сессии</div>
-                <div class="block" onclick="showContent('intensive-course')">4-х дневный интенсив</div>
-                <div class="block" onclick="showContent('author-course')">Авторский курс - Энергия жизни</div>
-                <div class="block" onclick="showContent('psychological-sessions')">Психологические сессии</div>
-                <div class="block" onclick="showContent('facial-rejuvenation')">Омоложение лица</div>
-                <div class="block" onclick="showContent('body-energy-practices')">Телесно-энергетическая терапия</div>
-            </div>
-        </div>
-    </div>
-    <footer>
-        <p class="custom-color-white">Наталья Шарова &copy; 2024</p>
-    </footer>
+    <script type="text/javascript" src="https://jstest.authorize.net/v1/Accept.js" charset="utf-8"></script>
 
     <script>
-        function showContent(section) {
-            const contentDiv = document.getElementById('content');
-            if (section === 'home') {
-                contentDiv.innerHTML = `
-                    <h1>Добро пожаловать на мой сайт</h1>
-                    <p>Это моя визитка, где я помогаю людям раскрыть их внутренний потенциал и достичь гармонии души и тела.</p>
-                    <div class="blocks">
-                        <div class="block" onclick="showContent('energy-sessions')" >Энергоочищающие сессии</div>
-                        <div class="block" onclick="showContent('intensive-course')">4-х дневный интенсив</div>
-                        <div class="block" onclick="showContent('author-course')">Авторский курс - Энергия жизни</div>
-                        <div class="block" onclick="showContent('psychological-sessions')">Психологические сессии</div>
-                        <div class="block" onclick="showContent('facial-rejuvenation')">Омоложение лица</div>
-                        <div class="block" onclick="showContent('body-energy-practices')">Телесно-энергетические практики</div>
-                    </div>
-                `;
-            } else if (section === 'about') {
-                contentDiv.innerHTML = `
-                    <h2>Целитель Души и Тела</h2>
-                    
-                    <p class="justified-text">Меня зовут Наталья Шарова, мне 49 лет, и я живу во Флориде. Я родом из Санкт-Петербурга, Россия. Исцеление душ и тел – это не просто моя работа, это моя миссия и предназначение.</p>
-					<p class="justified-text">Моя история началась несколько лет назад, когда я решила посвятить свою жизнь помощи людям. Я прошла обучение в школах и академиях, и продолжаю непрерывно развиваться и повышать уровень своих навыков. Я специалист по прикладной биомеханике, естественному омоложению и оздоровлению, энерготерапевт, ароматерапевт и начинающий психолог. Также у меня развиты экстрасенсорные способности.</p>
-					<p class="justified-text">Неважно, какие проблемы вас беспокоят – будь то физические недуги, психологические или социальные трудности. Я разрабатываю индивидуальные планы и терапию для каждого. Мой авторский курс «Энергия Жизни» поможет вам комплексно решить ваши проблемы и вернуть гармонию в жизнь.</p>
-					<p class="justified-text">Если другие методы вам не помогли – я здесь, чтобы предложить вам новую надежду и путь к исцелению. Давайте начнем этот путь вместе!</p>
-                    <p><img src="photo_01_scaled.jpeg"></p>
-                    <p></p>
-                    <h2>Мои отзывы:</h2>
-                    <p><img src="review_07_scaled.jpeg"></p>
-                    <p><img src="review_02_scaled.jpeg"></p>
-                    <p><img src="review_01_scaled.jpeg"></p>
-                    <p><img src="review_04_scaled.jpeg"></p>
-                    <p><img src="review_05_scaled.jpeg"></p>
-                `;
-            } else if (section === 'contact') {
-                contentDiv.innerHTML = `
-                    <h2>Контакты</h2>
-                    <p>Буду рада помочь вам на пути к гармонии и саморазвитию.</p>
-                    <ul>
-                        <li>Email: <a href="mailto:natalisol0703@gmail.com">natalisol0703@gmail.com</a></li>
-                        <li>Телефон: +1 (561) 774-1218</li>
-                        <li>Фейсбук: <a href="https://www.facebook.com/profile.php?id=100066900934134">Natalia Sharova</a></li>
-                        <li>Instagram: <a href="https://www.instagram.com/ns_holistic_beauty/">@ns_holistic_beauty</a></li>
-                    </ul>
-                    <p>Адрес: 10259 Brookville Ln, Boca Raton, FL 33428</p>
-                    <p>Часы работы: Пн-Пт с 9:00 до 20:00</p>
-                `;
-            } else if (section === 'energy-sessions') {
-                contentDiv.innerHTML = `
-                    <h2>Энергоочищающие сессии</h2>
-                    <p><h3>Ощутите мощь исцеления!</h3>
-                    <p class="justified-text"><b>Что это?</b> 20-минутные дистанционные сессии, которые очищают и восстанавливают вашу энергетику. Я работаю с чакрами, энергетическими телами, избавляю от негативных привязок, исправляю связи с Родом, прошлыми жизнями и теневыми сторонами личности. Мои сеансы охватывают каналы Здоровья, Удачи, Любви и Денег, помогая вам достичь гармонии и процветания.</p>
-                    <p class="justified-text"><b>Для кого?</b> Для тех, кто устал от стресса, тревог и усталости. Если вы боретесь с физическими недугами, психологическими или социальными проблемами - эти сеансы для вас. Я предлагаю индивидуальные решения для каждого, чтобы вернуть вам радость и энергию.</p>
-                    <p><b>Особые предложения</b></p>
-                    <ul>
-                        <li>Первая консультация бесплатно!</li>
-                        <li>Скидка 20% на первый сеанс!</li>
-                    </ul>
-                    <p>Длительность - 40 минут</p>
-                    <p>Стоимость сеанса - $70</p>
-                    <p>Рекомендации по поддержанию результата</p>
-                    <p><b>Начните свой путь к исцелению сегодня!</b></p>
-                    <button class="pay-button" onclick="initiatePayment(70, 'Energy Session - Natalia Healing')">Оплатить сеанс</button>
-                `;
-            } else if (section === 'intensive-course') {
-                contentDiv.innerHTML = `
-                    <h2>4-х дневный интенсив</h2>
-                    <p><b>Погрузитесь в мир исцеления и энергии!</b></p>
-                    <p>Мой 4-х дневный интенсив поможет вам избавиться от боли, депрессии, стресса, негативных эмоций и внутреннего сопротивления. Вы почувствуете прилив энергии и улучшение общего состояния гораздо быстрее, чем при одиночных сессиях энергоочищения.</p>
-                    <p><b>Особое предложение:</b></p>
-                    <ul>
-                        <li>Первая консультация бесплатно!</li>
-                    </ul>
-                    <p><b>Не упустите шанс обрести гармонию и здоровье быстрее, чем вы думали! Начните свой путь к исцелению уже сегодня!</b></p>
-                    <p>Стоимость: $250</p>
-                    <button class="pay-button" onclick="initiatePayment(250, '4-Day Intensive Course')">Оплатить интенсив</button>
-                `;
-            } else if (section === 'author-course') {
-                contentDiv.innerHTML = `
-<h2>Погрузитесь в трансформационное путешествие с авторским курсом «Энергия жизни».</h2>
+        let currentAmount = 0;
+        let currentDescription = "";
 
-<b>Эта уникальная программа включает несколько этапов:</b>
-<ul>
-<li>Энергоочищающий 4-дневный интенсив.</li>
-<li>Телесно-энергетические практики (3 сеанса), включая осознанный транс для быстрого устранения различных проблем.</li>
-<li>Психологическая сессия для работы с целями жизни, миссией и предназначением.</li>
-</ul>
+        function initiatePayment(amount, description) {
+            currentAmount = amount;
+            currentDescription = description;
 
-<p>Первая консультация бесплатна.</p>
-<p>Стоимость: $700</p>
-<b>Начните путь к новой жизни уже сегодня!</b>
-<button class="pay-button" onclick="initiatePayment(700, 'author-course')">Оплатить курс</button>
+            // Here you would typically show your Popup/Modal to collect Card Info
+            // For this example, we assume the user has filled the fields in a modal
+            // and then calls the original send function:
+            //sendPaymentDataToAnet();
 
-                `;
-            } else if (section === 'psychological-sessions') {
-                contentDiv.innerHTML = `
+            // 2. Update Modal UI
+            document.getElementById('modalAmount').innerText = amount;
+            document.getElementById('modalTitle').innerText = "Оплата: " + amount + "$";
+            document.getElementById('modalDescription').innerText = description;
 
-<h2>Откройте свой потенциал с нашими психологическими сессиями! Я помогу вам:</h2>
-<ul>
-<li>Определиться с жизненными целями, миссией и предназначением.</li>
-<li>Простроить шаги к достижению целей, устранить ограничения и преодолеть преграды.</li>
-<li>Увидеть перспективы развития личности и бизнеса.</li>
-</ul>
+            // 3. Show Modal
+            document.getElementById('paymentModal').style.display = "block";
+        }
 
-<p>Первая консультация бесплатна.</p>
-<p>Получите 20% скидку на первую сессию.</p>
-<p><b>Начните своё преображение сегодня!</b></p>
-<p>Длительность - 60 минут</p>
-<p>Стоимость: $85</p>
-<button class="pay-button" onclick="initiatePayment(85, 'psychological-sessions')">Оплатить сессию</button>
-                `;
-            } else if (section === 'facial-rejuvenation') {
-                contentDiv.innerHTML = `
-<h2>Омоложение лица</h2>
 
-<p><b>Ваша естественная красота без инъекций!</b></p>
-<p>Что это? Индивидуальные энергетические и телесные процедуры, специально подобранные для вас. Я использую разнообразные техники массажа: интероральный, остеопатический, баночный, вибрационный, скульптурный и миофасциальный релиз, чтобы достичь максимальных результатов.</p>
+        function closeModal() {
+            document.getElementById('paymentModal').style.display = "none";
+        }
 
-<p>Для кого? Для тех, кто хочет выглядеть молодо и натурально, избегая инъекционных методов. Эти процедуры помогут вам естественным образом избавиться от морщин, заломов, складок, мешков под глазами, отеков и второго подбородка. Вы улучшите тургор и цвет лица, а также исправите асимметрию.</p>
+        window.onclick = function (event) {
+            let modal = document.getElementById('paymentModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
 
-<p><b>Особые предложения:</b><p>
-<ul>
-<li>Первая консультация бесплатно!</li>
-<li>Скидка 20% на первый сеанс!</li>
-</ul>
+        async function processPaymentOnBackend(opaqueData) {
+            // Show loader, hide button
+            document.getElementById('paySubmitButton').style.display = 'none';
+            document.getElementById('loadingIndicator').style.display = 'block';
 
-<p><b>Начните путь к омоложению уже сегодня и обретите свою лучшую версию!</b></p>
-<p>Длительность: 75 минут</p>
-<p>Стоимость: $150</p>
-<button class="pay-button" onclick="initiatePayment(150, 'facial-rejuvenation')">Оплатить сессию</button>
-                `;
-            } else if (section === 'body-energy-practices') {
-                contentDiv.innerHTML = `
-                    <h2>Телесно-энергетическая терапия</h2>
-                    <p><b>Ваш путь к здоровью и гармонии</b></p>
-                    <p><b>Что это такое?</b></p>
-                    <p>Используя мои развитые экстрасенсорные способности, я обнаруживаю и устраняю зажимы и блоки в вашем теле. Я гармонизирую работу внутренних органов и систем, восстанавливаю работу энергетических меридианов. Улучшаю осанку, корректирую положение тела, устраняю боли.</p>
-                    <p><b>Для кого это подходит?</b></p>
-                    <p>Для тех, кто страдает от боли, нарушенной осанки, отеков, возрастных изменений лица, бессонницы, гормональных нарушений, проблем с весом, усталости, стресса, нехватки энергии, кожных заболеваний и других недугов.</p>
+            const payload = {
+                dataDescriptor: opaqueData.dataDescriptor,
+                dataValue: opaqueData.dataValue,
+                amount: currentAmount,
+                description: currentDescription,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value
+            };
 
-                    <p><b>Особые предложения</b></p>
-                    <ul>
-                        <li>Первая консультация бесплатно!</li>
-                        <li>Скидка 20% на первый сеанс!</li>
-                    </ul>
+            try {
+                const response = await fetch('https://solomakin.com/api/v1/payments/process', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
 
-                    <p>Длительность - 70 минут</p>
-                    <p>Стоимость сеанса - $150</p>
-                    <p><b>Попробуй и ощути разницу!</b></p>
-<button class="pay-button" onclick="initiatePayment(150, 'body-energy-practices')">Оплатить сессию</button>
-                `;
+                if (response.ok) {
+                    alert("Успешно! Ваша оплата принята.");
+                    closeModal();
+                    // Optional: window.location.href = "success.html";
+                } else {
+                    const errorData = await response.json();
+                    alert("Ошибка: " + (errorData.message || "Платеж отклонен."));
+                    resetModal();
+                }
+            } catch (err) {
+                alert("Ошибка сети. Проверьте соединение.");
+                resetModal();
+            }
+        }
+
+        function resetModal() {
+            document.getElementById('paySubmitButton').style.display = 'block';
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+
+        function sendPaymentDataToAnet() {
+            var authData = {
+                clientKey: "4663hn9qcxCLYxYpKQXF6dtu9NUG7V4F893336EZyYjCz2rceQ9vgghsu6jZEePd",
+                apiLoginID: "695CdbtN22d"
+            };
+
+            var cardData = {
+                cardNumber: document.getElementById("cardNumber").value,
+                month: document.getElementById("expMonth").value,
+                year: document.getElementById("expYear").value,
+                cardCode: document.getElementById("cvv").value
+            };
+
+            var secureData = {
+                authData: authData,
+                cardData: cardData
+            };
+
+            Accept.dispatchData(secureData, responseHandler);
+        }
+
+        function responseHandler(response) {
+            if (response.messages.resultCode === "Error") {
+                alert("Error: " + response.messages.message[0].text);
+            } else {
+                // Prepare the object for your Spring Boot API
+                const payload = {
+                    dataDescriptor: response.opaqueData.dataDescriptor,
+                    dataValue: response.opaqueData.dataValue,
+                    amount: currentAmount,
+                    description: currentDescription,
+                    email: document.getElementById("email").value, // Collect these in your popup
+                    phone: document.getElementById("phone").value
+                };
+
+                processPaymentOnBackend(payload);
             }
         }
     </script>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Исцеление души и тела</title>
+        <style>
+            .justified-text {
+                text-align: justify;
+            }
+        </style>
+        <style>
+            body {
+                font-family: 'Helvetica Neue', Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f5f5f5;
+                color: #4a4a4a;
+            }
+            .container {
+                width: 80%;
+                margin: auto;
+                overflow: hidden;
+            }
+            header {
+                background-image: url('draw-image--dark-night-sky-in-blue-tones--rare-stars-cropped-70.jpg');
+                background-size: cover;
+                padding-top: 30px;
+                min-height: 130px;
+                border-bottom: #151b60 3px solid;
+            }
+            header a {
+                color: #ffffff;
+                text-decoration: none;
+                text-transform: uppercase;
+                font-size: 16px;
+                cursor: pointer;
+                transition: color 0.3s ease;
+            }
+            header a:hover {
+                color: #e0e0e0;
+            }
+            header ul {
+                padding: 0;
+                list-style: none;
+                display: flex;
+                justify-content: flex-end;
+            }
+            header li {
+                margin: 0 20px;
+            }
+            header .highlight, header .current a {
+                color: #ffd700;
+            }
+            header .branding {
+                float: left;
+            }
+            header .branding img {
+                width: 120px; /* Увеличено с 60px до 120px */
+                height: 120px; /* Увеличено с 60px до 120px */
+                border-radius: 50%;
+                object-fit: cover;
+            }
+            .content {
+                padding: 30px;
+                background: #fff;
+                min-height: 400px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                border-radius: 8px;
+                margin-top: 20px;
+            }
+            .blocks {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                margin-top: 20px;
+            }
+            .block {
+                background-image: url('draw-image--dark-night-sky-in-blue-tones--rare-stars-cropped-70.jpg');
+                background-size: cover;
+                padding: 25px;
+                flex: 1 1 calc(33% - 40px);
+                box-sizing: border-box;
+                min-width: 250px;
+                text-align: center;
+                cursor: pointer;
+                border-radius: 8px;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                color: #FFFFFF;
+            }
+            .block:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                background: #283593;
+            }
+            footer {
+                background-image: url('draw-image--dark-night-sky-in-blue-tones--rare-stars-cropped-70.jpg');
+                background-size: cover;
+                padding: 20px;
+                margin-top: 20px;
+                text-align: center;
+                border-radius: 8px;
+            }
 
-<div id="paymentModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeModal()">&times;</span>
-        <h2 id="modalTitle">Complete Payment</h2>
-        <p id="modalDescription" style="color: #666; font-size: 0.9rem;"></p>
-        <hr>
-        
-        <input type="text" id="cardNumber" placeholder="Card Number (16 digits)" maxlength="16">
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="expMonth" placeholder="MM" maxlength="2">
-            <input type="text" id="expYear" placeholder="YY" maxlength="2">
-            <input type="text" id="cvv" placeholder="CVV" maxlength="4">
+            .custom-color-white {
+                color: #FFFFFF;
+            }
+            .custom-color-blue {
+                color: #171c9c;
+            }
+
+            @media (max-width: 600px) {
+                header ul {
+                    flex-direction: column;
+                    align-items: center;
+                }
+                header li {
+                    margin: 10px 0;
+                }
+                .container {
+                    width: 95%;
+                    padding: 0 10px;
+                }
+                .content {
+                    padding: 15px;
+                }
+                .blocks {
+                    flex-direction: column;
+                }
+                .block {
+                    flex: 1 1 100%;
+                }
+            }
+            .pay-button {
+                background-color: #ffd700; /* Gold to match your highlight color */
+                color: #151b60;
+                border: none;
+                padding: 15px 30px;
+                font-size: 18px;
+                font-weight: bold;
+                border-radius: 50px;
+                cursor: pointer;
+                margin-top: 20px;
+                transition: transform 0.2s, background-color 0.2s;
+            }
+
+            .pay-button:hover {
+                background-color: #ffffff;
+                transform: scale(1.05);
+            }
+            .close-button {
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+                color: #aaa;
+            }
+            .close-button:hover {
+                color: #000;
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.7);
+                backdrop-filter: blur(4px);
+            }
+
+            .modal-content {
+                background-color: #fff;
+                margin: 5% auto;
+                padding: 30px;
+                border-radius: 12px;
+                width: 90%;
+                max-width: 400px;
+                box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+                color: #333; /* Text inside modal needs to be dark */
+            }
+
+            .modal-content input {
+                width: 100%;
+                padding: 12px;
+                margin: 8px 0;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                box-sizing: border-box;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="container">
+                <div class="branding">
+                    <img src="site_04.jpeg" alt="Logo" width="120" height="120">
+                </div>
+                <nav>
+                    <ul>
+                        <li><a onclick="showContent('home')">Главная</a></li>
+                        <li><a onclick="showContent('about')">Обо мне</a></li>
+                        <li><a onclick="showContent('contact')">Контакты</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="content" id="content">
+                <h1 class="custom-color-blue">Исцеление души и тела</h1>
+                <p>Меня зовут Наталья Шарова, и я здесь, чтобы помочь вам найти путь к исцелению, когда другие методы не принесли облегчения. Моя миссия – исцелять души и тела, используя уникальные методики, которые действительно работают.</p>
+                <p>Если вы ищете истинное исцеление и готовы к переменам, я здесь, чтобы провести вас через этот путь. Добро пожаловать на первый шаг к вашему новому здоровью и благополучию!</p>
+                <div class="blocks">
+                    <div class="block" onclick="showContent('energy-sessions')">Энергоочищающие сессии</div>
+                    <div class="block" onclick="showContent('intensive-course')">4-х дневный интенсив</div>
+                    <div class="block" onclick="showContent('author-course')">Авторский курс - Энергия жизни</div>
+                    <div class="block" onclick="showContent('psychological-sessions')">Психологические сессии</div>
+                    <div class="block" onclick="showContent('facial-rejuvenation')">Омоложение лица</div>
+                    <div class="block" onclick="showContent('body-energy-practices')">Телесно-энергетическая терапия</div>
+                </div>
+            </div>
         </div>
-        <input type="email" id="email" placeholder="Email Address">
-        <input type="tel" id="phone" placeholder="Phone Number">
-        
-        <button id="paySubmitButton" class="pay-button" style="width: 100%;" onclick="sendPaymentDataToAnet()">
-            Pay $<span id="modalAmount">0</span>
-        </button>
-        <div id="loadingIndicator" style="display:none; margin-top:10px;">Processing payment... Please wait.</div>
-    </div>
-</div>
+        <footer>
+            <p class="custom-color-white">Наталья Шарова &copy; 2024</p>
+        </footer>
+
+        <script>
+            function showContent(section) {
+                const contentDiv = document.getElementById('content');
+                if (section === 'home') {
+                    contentDiv.innerHTML = `
+                        <h1>Добро пожаловать на мой сайт</h1>
+                        <p>Это моя визитка, где я помогаю людям раскрыть их внутренний потенциал и достичь гармонии души и тела.</p>
+                        <div class="blocks">
+                            <div class="block" onclick="showContent('energy-sessions')" >Энергоочищающие сессии</div>
+                            <div class="block" onclick="showContent('intensive-course')">4-х дневный интенсив</div>
+                            <div class="block" onclick="showContent('author-course')">Авторский курс - Энергия жизни</div>
+                            <div class="block" onclick="showContent('psychological-sessions')">Психологические сессии</div>
+                            <div class="block" onclick="showContent('facial-rejuvenation')">Омоложение лица</div>
+                            <div class="block" onclick="showContent('body-energy-practices')">Телесно-энергетические практики</div>
+                        </div>
+                    `;
+                } else if (section === 'about') {
+                    contentDiv.innerHTML = `
+                        <h2>Целитель Души и Тела</h2>
+                    
+                        <p class="justified-text">Меня зовут Наталья Шарова, мне 49 лет, и я живу во Флориде. Я родом из Санкт-Петербурга, Россия. Исцеление душ и тел – это не просто моя работа, это моя миссия и предназначение.</p>
+                                            <p class="justified-text">Моя история началась несколько лет назад, когда я решила посвятить свою жизнь помощи людям. Я прошла обучение в школах и академиях, и продолжаю непрерывно развиваться и повышать уровень своих навыков. Я специалист по прикладной биомеханике, естественному омоложению и оздоровлению, энерготерапевт, ароматерапевт и начинающий психолог. Также у меня развиты экстрасенсорные способности.</p>
+                                            <p class="justified-text">Неважно, какие проблемы вас беспокоят – будь то физические недуги, психологические или социальные трудности. Я разрабатываю индивидуальные планы и терапию для каждого. Мой авторский курс «Энергия Жизни» поможет вам комплексно решить ваши проблемы и вернуть гармонию в жизнь.</p>
+                                            <p class="justified-text">Если другие методы вам не помогли – я здесь, чтобы предложить вам новую надежду и путь к исцелению. Давайте начнем этот путь вместе!</p>
+                        <p><img src="photo_01_scaled.jpeg"></p>
+                        <p></p>
+                        <h2>Мои отзывы:</h2>
+                        <p><img src="review_07_scaled.jpeg"></p>
+                        <p><img src="review_02_scaled.jpeg"></p>
+                        <p><img src="review_01_scaled.jpeg"></p>
+                        <p><img src="review_04_scaled.jpeg"></p>
+                        <p><img src="review_05_scaled.jpeg"></p>
+                    `;
+                } else if (section === 'contact') {
+                    contentDiv.innerHTML = `
+                        <h2>Контакты</h2>
+                        <p>Буду рада помочь вам на пути к гармонии и саморазвитию.</p>
+                        <ul>
+                            <li>Email: <a href="mailto:natalisol0703@gmail.com">natalisol0703@gmail.com</a></li>
+                            <li>Телефон: +1 (561) 774-1218</li>
+                            <li>Фейсбук: <a href="https://www.facebook.com/profile.php?id=100066900934134">Natalia Sharova</a></li>
+                            <li>Instagram: <a href="https://www.instagram.com/ns_holistic_beauty/">@ns_holistic_beauty</a></li>
+                        </ul>
+                        <p>Адрес: 10259 Brookville Ln, Boca Raton, FL 33428</p>
+                        <p>Часы работы: Пн-Пт с 9:00 до 20:00</p>
+                    `;
+                } else if (section === 'energy-sessions') {
+                    contentDiv.innerHTML = `
+                        <h2>Энергоочищающие сессии</h2>
+                        <p><h3>Ощутите мощь исцеления!</h3>
+                        <p class="justified-text"><b>Что это?</b> 20-минутные дистанционные сессии, которые очищают и восстанавливают вашу энергетику. Я работаю с чакрами, энергетическими телами, избавляю от негативных привязок, исправляю связи с Родом, прошлыми жизнями и теневыми сторонами личности. Мои сеансы охватывают каналы Здоровья, Удачи, Любви и Денег, помогая вам достичь гармонии и процветания.</p>
+                        <p class="justified-text"><b>Для кого?</b> Для тех, кто устал от стресса, тревог и усталости. Если вы боретесь с физическими недугами, психологическими или социальными проблемами - эти сеансы для вас. Я предлагаю индивидуальные решения для каждого, чтобы вернуть вам радость и энергию.</p>
+                        <p><b>Особые предложения</b></p>
+                        <ul>
+                            <li>Первая консультация бесплатно!</li>
+                            <li>Скидка 20% на первый сеанс!</li>
+                        </ul>
+                        <p>Длительность - 40 минут</p>
+                        <p>Стоимость сеанса - $70</p>
+                        <p>Рекомендации по поддержанию результата</p>
+                        <p><b>Начните свой путь к исцелению сегодня!</b></p>
+                        <button class="pay-button" onclick="initiatePayment(70, 'Энергоочищающие сессии')">Оплатить сеанс</button>
+                    `;
+                } else if (section === 'intensive-course') {
+                    contentDiv.innerHTML = `
+                        <h2>4-х дневный интенсив</h2>
+                        <p><b>Погрузитесь в мир исцеления и энергии!</b></p>
+                        <p>Мой 4-х дневный интенсив поможет вам избавиться от боли, депрессии, стресса, негативных эмоций и внутреннего сопротивления. Вы почувствуете прилив энергии и улучшение общего состояния гораздо быстрее, чем при одиночных сессиях энергоочищения.</p>
+                        <p><b>Особое предложение:</b></p>
+                        <ul>
+                            <li>Первая консультация бесплатно!</li>
+                        </ul>
+                        <p><b>Не упустите шанс обрести гармонию и здоровье быстрее, чем вы думали! Начните свой путь к исцелению уже сегодня!</b></p>
+                        <p>Стоимость: $250</p>
+                        <button class="pay-button" onclick="initiatePayment(250, '4-х дневный интенсив')">Оплатить интенсив</button>
+                    `;
+                } else if (section === 'author-course') {
+                    contentDiv.innerHTML = `
+    <h2>Погрузитесь в трансформационное путешествие с авторским курсом «Энергия жизни».</h2>
+
+    <b>Эта уникальная программа включает несколько этапов:</b>
+    <ul>
+    <li>Энергоочищающий 4-дневный интенсив.</li>
+    <li>Телесно-энергетические практики (3 сеанса), включая осознанный транс для быстрого устранения различных проблем.</li>
+    <li>Психологическая сессия для работы с целями жизни, миссией и предназначением.</li>
+    </ul>
+
+    <p>Первая консультация бесплатна.</p>
+    <p>Стоимость: $700</p>
+    <b>Начните путь к новой жизни уже сегодня!</b>
+    <button class="pay-button" onclick="initiatePayment(700, 'авторский курс «Энергия жизни»')">Оплатить курс</button>
+
+                    `;
+                } else if (section === 'psychological-sessions') {
+                    contentDiv.innerHTML = `
+
+    <h2>Откройте свой потенциал с нашими психологическими сессиями! Я помогу вам:</h2>
+    <ul>
+    <li>Определиться с жизненными целями, миссией и предназначением.</li>
+    <li>Простроить шаги к достижению целей, устранить ограничения и преодолеть преграды.</li>
+    <li>Увидеть перспективы развития личности и бизнеса.</li>
+    </ul>
+
+    <p>Первая консультация бесплатна.</p>
+    <p>Получите 20% скидку на первую сессию.</p>
+    <p><b>Начните своё преображение сегодня!</b></p>
+    <p>Длительность - 60 минут</p>
+    <p>Стоимость: $85</p>
+    <button class="pay-button" onclick="initiatePayment(85, 'психологическая сессия')">Оплатить сессию</button>
+                    `;
+                } else if (section === 'facial-rejuvenation') {
+                    contentDiv.innerHTML = `
+    <h2>Омоложение лица</h2>
+
+    <p><b>Ваша естественная красота без инъекций!</b></p>
+    <p>Что это? Индивидуальные энергетические и телесные процедуры, специально подобранные для вас. Я использую разнообразные техники массажа: интероральный, остеопатический, баночный, вибрационный, скульптурный и миофасциальный релиз, чтобы достичь максимальных результатов.</p>
+
+    <p>Для кого? Для тех, кто хочет выглядеть молодо и натурально, избегая инъекционных методов. Эти процедуры помогут вам естественным образом избавиться от морщин, заломов, складок, мешков под глазами, отеков и второго подбородка. Вы улучшите тургор и цвет лица, а также исправите асимметрию.</p>
+
+    <p><b>Особые предложения:</b><p>
+    <ul>
+    <li>Первая консультация бесплатно!</li>
+    <li>Скидка 20% на первый сеанс!</li>
+    </ul>
+
+    <p><b>Начните путь к омоложению уже сегодня и обретите свою лучшую версию!</b></p>
+    <p>Длительность: 75 минут</p>
+    <p>Стоимость: $150</p>
+    <button class="pay-button" onclick="initiatePayment(150, 'Омоложение лица')">Оплатить сессию</button>
+                    `;
+                } else if (section === 'body-energy-practices') {
+                    contentDiv.innerHTML = `
+                        <h2>Телесно-энергетическая терапия</h2>
+                        <p><b>Ваш путь к здоровью и гармонии</b></p>
+                        <p><b>Что это такое?</b></p>
+                        <p>Используя мои развитые экстрасенсорные способности, я обнаруживаю и устраняю зажимы и блоки в вашем теле. Я гармонизирую работу внутренних органов и систем, восстанавливаю работу энергетических меридианов. Улучшаю осанку, корректирую положение тела, устраняю боли.</p>
+                        <p><b>Для кого это подходит?</b></p>
+                        <p>Для тех, кто страдает от боли, нарушенной осанки, отеков, возрастных изменений лица, бессонницы, гормональных нарушений, проблем с весом, усталости, стресса, нехватки энергии, кожных заболеваний и других недугов.</p>
+
+                        <p><b>Особые предложения</b></p>
+                        <ul>
+                            <li>Первая консультация бесплатно!</li>
+                            <li>Скидка 20% на первый сеанс!</li>
+                        </ul>
+
+                        <p>Длительность - 70 минут</p>
+                        <p>Стоимость сеанса - $150</p>
+                        <p><b>Попробуй и ощути разницу!</b></p>
+    <button class="pay-button" onclick="initiatePayment(150, 'Телесно-энергетическая терапия')">Оплатить сессию</button>
+                    `;
+                }
+            }
+        </script>
+
+        <div id="paymentModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal()">&times;</span>
+                <h2 id="modalTitle">Complete Payment</h2>
+                <p id="modalDescription" style="color: #666; font-size: 0.9rem;"></p>
+                <hr>
+
+                <input type="text" id="cardNumber" placeholder="Card Number (16 digits)" maxlength="16">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="expMonth" placeholder="MM" maxlength="2">
+                    <input type="text" id="expYear" placeholder="YY" maxlength="2">
+                    <input type="text" id="cvv" placeholder="CVV" maxlength="4">
+                </div>
+                <input type="email" id="email" placeholder="Email Address">
+                <input type="tel" id="phone" placeholder="Phone Number">
+
+                <button id="paySubmitButton" class="pay-button" style="width: 100%;" onclick="sendPaymentDataToAnet()">
+                    Pay $<span id="modalAmount">0</span>
+                </button>
+                <div id="loadingIndicator" style="display:none; margin-top:10px;">Processing payment... Please wait.</div>
+            </div>
+        </div>
 
 
-</body>
+    </body>
 </html>
 
